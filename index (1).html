@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>鸡兔同笼问题教学</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.4.0/lib/p5.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#F97316',
+                        neutral: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-custom {
+                transition: all 0.3s ease-in-out;
+            }
+            .shadow-custom {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .bg-gradient-custom {
+                background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 text-dark min-h-screen flex flex-col">
+    <!-- 导航栏 -->
+    <header class="bg-white shadow-md sticky top-0 z-50 transition-all duration-300">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-calculator text-primary text-2xl"></i>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">数学思维课堂</h1>
+            </div>
+            <nav class="hidden md:flex space-x-6">
+                <a href="#concept" class="text-dark hover:text-primary transition-custom font-medium">概念</a>
+                <a href="#example" class="text-dark hover:text-primary transition-custom font-medium">例题</a>
+                <a href="#quiz" class="text-dark hover:text-primary transition-custom font-medium">测验</a>
+                <a href="#calculator" class="text-dark hover:text-primary transition-custom font-medium">计算器</a>
+            </nav>
+            <button class="md:hidden text-primary text-xl" id="menuBtn">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+        <!-- 移动端菜单 -->
+        <div class="md:hidden hidden bg-white shadow-lg absolute w-full" id="mobileMenu">
+            <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
+                <a href="#concept" class="text-dark hover:text-primary transition-custom font-medium py-2">概念</a>
+                <a href="#example" class="text-dark hover:text-primary transition-custom font-medium py-2">例题</a>
+                <a href="#quiz" class="text-dark hover:text-primary transition-custom font-medium py-2">测验</a>
+                <a href="#calculator" class="text-dark hover:text-primary transition-custom font-medium py-2">计算器</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow">
+        <!-- 英雄区 -->
+        <section class="bg-gradient-custom text-white py-16 md:py-24">
+            <div class="container mx-auto px-4 flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-8 md:mb-0">
+                    <h2 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight mb-4">鸡兔同笼问题</h2>
+                    <p class="text-lg md:text-xl opacity-90 mb-8">探索中国古代经典数学问题，通过图形化方式理解假设法和方程法</p>
+                    <a href="#concept" class="bg-white text-primary px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-custom transform hover:-translate-y-1">
+                        开始学习 <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+                <div class="md:w-1/2 flex justify-center">
+                    <div id="heroCanvas" class="w-full max-w-md h-64 md:h-80"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 概念解释 -->
+        <section id="concept" class="py-16 bg-white">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4">什么是鸡兔同笼问题？</h2>
+                    <div class="w-24 h-1 bg-primary mx-auto"></div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <div class="p-6 rounded-xl bg-neutral shadow-custom">
+                        <h3 class="text-2xl font-semibold mb-4 text-primary">问题描述</h3>
+                        <p class="mb-4">鸡兔同笼问题是中国古代著名的数学问题，最早记载于《孙子算经》中。</p>
+                        <p class="mb-4">问题通常表述为：在一个笼子里有鸡和兔子，它们共有若干个头和若干只脚，问鸡和兔子各有多少只？</p>
+                        <div class="mt-6 p-4 bg-blue-50 border-l-4 border-primary rounded-r-lg">
+                            <p class="italic">"今有雉兔同笼，上有三十五头，下有九十四足，问雉兔各几何？"</p>
+                            <p class="text-right mt-2 text-sm">- 《孙子算经》（约公元3世纪）</p>
+                        </div>
+                    </div>
+                    <div class="p-6 rounded-xl bg-white border border-gray-200 shadow-custom">
+                        <h3 class="text-2xl font-semibold mb-4 text-primary">解题方法</h3>
+                        <div class="space-y-4">
+                            <div class="bg-blue-50 p-4 rounded-lg">
+                                <h4 class="font-semibold text-lg mb-2 flex items-center">
+                                    <i class="fa-solid fa-lightbulb text-secondary mr-2"></i> 假设法
+                                </h4>
+                                <p>假设全是鸡或全是兔，然后根据头和脚的数量差异来计算实际数量。</p>
+                            </div>
+                            <div class="bg-blue-50 p-4 rounded-lg">
+                                <h4 class="font-semibold text-lg mb-2 flex items-center">
+                                    <i class="fa-solid fa-calculator text-secondary mr-2"></i> 方程法
+                                </h4>
+                                <p>设鸡的数量为x，兔的数量为y，建立方程组：x + y = 头数，2x + 4y = 脚数，然后求解。</p>
+                            </div>
+                            <div class="bg-blue-50 p-4 rounded-lg">
+                                <h4 class="font-semibold text-lg mb-2 flex items-center">
+                                    <i class="fa-solid fa-paint-brush text-secondary mr-2"></i> 图形法
+                                </h4>
+                                <p>通过图形直观地表示鸡和兔的数量关系，帮助理解解题思路。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 图形演示 -->
+                <div class="mt-16">
+                    <h3 class="text-2xl font-semibold mb-6 text-center text-primary">直观图形演示</h3>
+                    <div class="bg-white rounded-xl shadow-custom p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="md:col-span-2">
+                                <div id="demoCanvas" class="w-full h-80 border border-gray-200 rounded-lg bg-neutral/50"></div>
+                            </div>
+                            <div class="flex flex-col justify-between">
+                                <div>
+                                    <h4 class="font-semibold text-lg mb-4">调整参数</h4>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label class="block text-sm font-medium mb-1">鸡的数量</label>
+                                            <input type="range" min="0" max="20" value="5" class="w-full" id="chickenSlider">
+                                            <div class="flex justify-between text-xs text-gray-500">
+                                                <span>0</span>
+                                                <span id="chickenCount">5</span>
+                                                <span>20</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium mb-1">兔的数量</label>
+                                            <input type="range" min="0" max="20" value="3" class="w-full" id="rabbitSlider">
+                                            <div class="flex justify-between text-xs text-gray-500">
+                                                <span>0</span>
+                                                <span id="rabbitCount">3</span>
+                                                <span>20</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-6 p-4 bg-primary/10 rounded-lg">
+                                    <h4 class="font-semibold text-lg mb-2">当前状态</h4>
+                                    <div class="grid grid-cols-2 gap-2 text-sm">
+                                        <div>总头数：</div>
+                                        <div id="totalHeads" class="font-semibold">8</div>
+                                        <div>总脚数：</div>
+                                        <div id="totalLegs" class="font-semibold">22</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 例题解析 -->
+        <section id="example" class="py-16 bg-neutral">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4">例题解析</h2>
+                    <div class="w-24 h-1 bg-primary mx-auto"></div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- 例题1 -->
+                    <div class="bg-white rounded-xl shadow-custom overflow-hidden transition-custom hover:shadow-lg transform hover:-translate-y-1">
+                        <div class="bg-primary text-white p-4">
+                            <h3 class="text-xl font-semibold">例题 1</h3>
+                        </div>
+                        <div class="p-6">
+                            <p class="font-medium mb-4">一个笼子里有鸡和兔子，共有10个头，28只脚，问鸡和兔子各有多少只？</p>
+                            
+                            <div class="space-y-4 mt-6">
+                                <div class="bg-blue-50 p-4 rounded-lg">
+                                    <h4 class="font-semibold mb-2">假设法解题步骤</h4>
+                                    <ol class="list-decimal list-inside space-y-2">
+                                        <li>假设全是鸡：10个头 × 2只脚 = 20只脚</li>
+                                        <li>实际脚数与假设的差值：28 - 20 = 8只脚</li>
+                                        <li>每只兔子比鸡多的脚数：4 - 2 = 2只脚</li>
+                                        <li>兔子的数量：8 ÷ 2 = 4只</li>
+                                        <li>鸡的数量：10 - 4 = 6只</li>
+                                    </ol>
+                                </div>
+                                
+                                <div class="bg-green-50 p-4 rounded-lg">
+                                    <h4 class="font-semibold mb-2">方程法解题步骤</h4>
+                                    <ol class="list-decimal list-inside space-y-2">
+                                        <li>设鸡的数量为x，兔的数量为y</li>
+                                        <li>根据头数建立方程：x + y = 10</li>
+                                        <li>根据脚数建立方程：2x + 4y = 28</li>
+                                        <li>解方程组：由第一个方程得x = 10 - y，代入第二个方程得2(10 - y) + 4y = 28</li>
+                                        <li>化简得20 - 2y + 4y = 28，即2y = 8，解得y = 4</li>
+                                        <li>代入x = 10 - 4，得x = 6</li>
+                                    </ol>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-6 p-4 bg-primary/10 rounded-lg">
+                                <h4 class="font-semibold mb-2">验证答案</h4>
+                                <p>鸡的数量：6只 → 头数：6，脚数：6×2=12</p>
+                                <p>兔的数量：4只 → 头数：4，脚数：4×4=16</p>
+                                <p>总头数：6 + 4 = 10，总脚数：12 + 16 = 28</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 例题2 -->
+                    <div class="bg-white rounded-xl shadow-custom overflow-hidden transition-custom hover:shadow-lg transform hover:-translate-y-1">
+                        <div class="bg-secondary text-white p-4">
+                            <h3 class="text-xl font-semibold">例题 2</h3>
+                        </div>
+                        <div class="p-6">
+                            <p class="font-medium mb-4">在一个笼子里，鸡和兔子共有20个头，56只脚，问鸡和兔子各有多少只？</p>
+                            
+                            <div class="space-y-4 mt-6">
+                                <div class="bg-blue-50 p-4 rounded-lg">
+                                    <h4 class="font-semibold mb-2">假设法解题步骤</h4>
+                                    <ol class="list-decimal list-inside space-y-2">
+                                        <li>假设全是兔：20个头 × 4只脚 = 80只脚</li>
+                                        <li>实际脚数与假设的差值：80 - 56 = 24只脚</li>
+                                        <li>每只鸡比兔子少的脚数：4 - 2 = 2只脚</li>
+                                        <li>鸡的数量：24 ÷ 2 = 12只</li>
+                                        <li>兔子的数量：20 - 12 = 8只</li>
+                                    </ol>
+                                </div>
+                                
+                                <div class="bg-green-50 p-4 rounded-lg">
+                                    <h4 class="font-semibold mb-2">方程法解题步骤</h4>
+                                    <ol class="list-decimal list-inside space-y-2">
+                                        <li>设鸡的数量为x，兔的数量为y</li>
+                                        <li>根据头数建立方程：x + y = 20</li>
+                                        <li>根据脚数建立方程：2x + 4y = 56</li>
+                                        <li>解方程组：由第一个方程得y = 20 - x，代入第二个方程得2x + 4(20 - x) = 56</li>
+                                        <li>化简得2x + 80 - 4x = 56，即-2x = -24，解得x = 12</li>
+                                        <li>代入y = 20 - 12，得y = 8</li>
+                                    </ol>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-6 p-4 bg-secondary/10 rounded-lg">
+                                <h4 class="font-semibold mb-2">验证答案</h4>
+                                <p>鸡的数量：12只 → 头数：12，脚数：12×2=24</p>
+                                <p>兔的数量：8只 → 头数：8，脚数：8×4=32</p>
+                                <p>总头数：12 + 8 = 20，总脚数：24 + 32 = 56</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 测验题 -->
+        <section id="quiz" class="py-16 bg-white">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4">测验题</h2>
+                    <div class="w-24 h-1 bg-primary mx-auto"></div>
+                    <p class="text-lg mt-4">测试一下你对鸡兔同笼问题的掌握程度吧！</p>
+                </div>
+                
+                <div id="quizContainer" class="max-w-3xl mx-auto">
+                    <!-- 测验题1 -->
+                    <div class="bg-white rounded-xl shadow-custom p-6 mb-8 border-l-4 border-primary">
+                        <h3 class="text-xl font-semibold mb-4">问题 1</h3>
+                        <p class="mb-6">一个笼子里有鸡和兔子，共有15个头，40只脚，问鸡和兔子各有多少只？</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">鸡的数量</label>
+                                <input type="number" min="0" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" id="quiz1Chicken">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">兔的数量</label>
+                                <input type="number" min="0" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" id="quiz1Rabbit">
+                            </div>
+                        </div>
+                        
+                        <button class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-custom" onclick="checkAnswer(1)">
+                            检查答案
+                        </button>
+                        <div id="quiz1Feedback" class="mt-4 hidden"></div>
+                    </div>
+                    
+                    <!-- 测验题2 -->
+                    <div class="bg-white rounded-xl shadow-custom p-6 mb-8 border-l-4 border-secondary">
+                        <h3 class="text-xl font-semibold mb-4">问题 2</h3>
+                        <p class="mb-6">一个笼子里有鸡和兔子，共有22个头，64只脚，问鸡和兔子各有多少只？</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">鸡的数量</label>
+                                <input type="number" min="0" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary" id="quiz2Chicken">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">兔的数量</label>
+                                <input type="number" min="0" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary" id="quiz2Rabbit">
+                            </div>
+                        </div>
+                        
+                        <button class="bg-secondary text-white px-4 py-2 rounded-lg hover:bg-secondary/90 transition-custom" onclick="checkAnswer(2)">
+                            检查答案
+                        </button>
+                        <div id="quiz2Feedback" class="mt-4 hidden"></div>
+                    </div>
+                    
+                    <!-- 测验题3 -->
+                    <div class="bg-white rounded-xl shadow-custom p-6 mb-8 border-l-4 border-green-500">
+                        <h3 class="text-xl font-semibold mb-4">问题 3</h3>
+                        <p class="mb-6">一个笼子里有鸡和兔子，共有8个头，26只脚，问鸡和兔子各有多少只？</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">鸡的数量</label>
+                                <input type="number" min="0" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" id="quiz3Chicken">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">兔的数量</label>
+                                <input type="number" min="0" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" id="quiz3Rabbit">
+                            </div>
+                        </div>
+                        
+                        <button class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-custom" onclick="checkAnswer(3)">
+                            检查答案
+                        </button>
+                        <div id="quiz3Feedback" class="mt-4 hidden"></div>
+                    </div>
+                    
+                    <!-- 测验结果 -->
+                    <div id="quizResult" class="mt-10 p-6 rounded-xl bg-primary/10 hidden">
+                        <h3 class="text-xl font-semibold mb-4">测验结果</h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span>答对题目：</span>
+                                <span id="correctAnswers" class="font-semibold">0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>总题目数：</span>
+                                <span>3</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>得分：</span>
+                                <span id="quizScore" class="font-semibold">0%</span>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <button class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-custom" onclick="resetQuiz()">
+                                重新测验
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 计算器 -->
+        <section id="calculator" class="py-16 bg-neutral">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4">鸡兔同笼计算器</h2>
+                    <div class="w-24 h-1 bg-primary mx-auto"></div>
+                    <p class="text-lg mt-4">输入头数和脚数，计算鸡和兔子的数量</p>
+                </div>
+                
+                <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-custom p-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">总头数</label>
+                            <input type="number" min="1" id="totalHeadsInput" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" placeholder="输入总头数">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">总脚数</label>
+                            <input type="number" min="2" id="totalLegsInput" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" placeholder="输入总脚数">
+                        </div>
+                    </div>
+                    
+                    <button id="calculateBtn" class="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-primary/90 transition-custom shadow-lg hover:shadow-xl">
+                        计算
+                    </button>
+                    
+                    <div id="calculatorResult" class="mt-8 p-6 rounded-xl bg-primary/5 hidden">
+                        <h3 class="text-xl font-semibold mb-4">计算结果</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-white p-4 rounded-lg shadow-sm">
+                                <div class="flex items-center">
+                                    <i class="fa-solid fa-dove text-primary text-2xl mr-3"></i>
+                                    <div>
+                                        <div class="text-sm text-gray-500">鸡的数量</div>
+                                        <div id="resultChickens" class="text-2xl font-bold">0</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white p-4 rounded-lg shadow-sm">
+                                <div class="flex items-center">
+                                    <i class="fa-solid fa-rabbit text-secondary text-2xl mr-3"></i>
+                                    <div>
+                                        <div class="text-sm text-gray-500">兔的数量</div>
+                                        <div id="resultRabbits" class="text-2xl font-bold">0</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="calculationSteps" class="mt-6 p-4 bg-blue-50 rounded-lg">
+                            <h4 class="font-semibold mb-2">计算步骤</h4>
+                            <div id="stepsContent" class="text-sm space-y-2">
+                                <!-- 计算步骤将在这里显示 -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="calculatorError" class="mt-8 p-4 bg-red-50 border border-red-200 rounded-lg hidden">
+                        <div class="flex items-center">
+                            <i class="fa-solid fa-exclamation-triangle text-red-500 mr-3"></i>
+                            <div>
+                                <h4 class="font-semibold text-red-700">输入错误</h4>
+                                <p id="errorMessage" class="text-sm text-red-600">请输入有效的头数和脚数</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">数学思维课堂</h3>
+                    <p class="text-gray-400">探索数学之美，培养逻辑思维</p>
+                    <div class="mt-4 flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-custom">
+                            <i class="fa-brands fa-weibo"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-custom">
+                            <i class="fa-brands fa-wechat"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-custom">
+                            <i class="fa-brands fa-youtube"></i>
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">快速链接</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#concept" class="text-gray-400 hover:text-white transition-custom">概念讲解</a></li>
+                        <li><a href="#example" class="text-gray-400 hover:text-white transition-custom">例题解析</a></li>
+                        <li><a href="#quiz" class="text-gray-400 hover:text-white transition-custom">测验题</a></li>
+                        <li><a href="#calculator" class="text-gray-400 hover:text-white transition-custom">计算器</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">联系我们</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-center">
+                            <i class="fa-solid fa-envelope text-gray-400 mr-2"></i>
+                            <a href="mailto:contact@mathclass.com" class="text-gray-400 hover:text-white transition-custom">contact@mathclass.com</a>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fa-solid fa-phone text-gray-400 mr-2"></i>
+                            <span class="text-gray-400">400-123-4567</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-8 pt-8 border-t border-gray-700 text-center text-gray-500 text-sm">
+                <p>© 2025 数学思维课堂 版权所有</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 英雄区p5.js画布
+        new p5(function(sketch) {
+            let chickens = 3;
+            let rabbits = 2;
+            
+            sketch.setup = function() {
+                const canvas = sketch.createCanvas(sketch.windowWidth > 768 ? 400 : 300, 240);
+                canvas.parent('heroCanvas');
+                sketch.frameRate(3);
+            };
+            
+            sketch.draw = function() {
+                sketch.background(255);
+                sketch.fill(59, 130, 246, 200);
+                
+                // 绘制鸡
+                for (let i = 0; i < chickens; i++) {
+                    const x = 50 + i * 70;
+                    drawChicken(x, 120);
+                }
+                
+                // 绘制兔子
+                for (let i = 0; i < rabbits; i++) {
+                    const x = 50 + i * 70;
+                    drawRabbit(x, 200);
+                }
+            };
+            
+            function drawChicken(x, y) {
+                // 身体
+                sketch.ellipse(x, y, 40, 30);
+                
+                // 头部特征
+                sketch.ellipse(x + 25, y - 10, 20, 20); // 头部
+                sketch.fill(255, 0, 0);
+                sketch.triangle(x + 25, y - 20, x + 30, y - 25, x + 35, y - 20); // 鸡冠
+                sketch.fill(255, 165, 0);
+                sketch.triangle(x + 35, y - 10, x + 40, y - 15, x + 40, y - 5); // 嘴
+                
+                // 眼睛
+                sketch.fill(0);
+                sketch.ellipse(x + 28, y - 12, 4, 4);
+                
+                // 腿（2条细腿）
+                sketch.stroke(255, 165, 0);
+                sketch.strokeWeight(3);
+                sketch.line(x - 10, y + 15, x - 15, y + 25);
+                sketch.line(x + 0, y + 15, x + 5, y + 25);
+                
+                // 翅膀
+                sketch.noStroke();
+                sketch.ellipse(x - 15, y - 5, 15, 10);
+            }
+            
+            function drawRabbit(x, y) {
+                // 身体
+                sketch.ellipse(x, y, 45, 35);
+                
+                // 头部特征
+                sketch.ellipse(x + 30, y - 5, 25, 25); // 头部
+                sketch.fill(255, 192, 203);
+                sketch.triangle(x + 25, y - 30, x + 30, y - 45, x + 35, y - 30); // 左耳
+                sketch.triangle(x + 35, y - 30, x + 40, y - 45, x + 45, y - 30); // 右耳
+                
+                // 眼睛
+                sketch.fill(255, 0, 0);
+                sketch.ellipse(x + 35, y - 10, 5, 5);
+                
+                // 嘴（三瓣嘴）
+                sketch.stroke(0);
+                sketch.strokeWeight(1);
+                sketch.noFill();
+                sketch.arc(x + 40, y - 5, 10, 10, 0, sketch.PI);
+                
+                // 腿（4条粗腿）
+                sketch.stroke(0);
+                sketch.strokeWeight(4);
+                sketch.line(x - 15, y + 17, x - 20, y + 27); // 左前腿
+                sketch.line(x + 0, y + 17, x + 5, y + 27); // 右前腿
+                sketch.line(x - 15, y + 22, x - 20, y + 32); // 左后腿
+                sketch.line(x + 0, y + 22, x + 5, y + 32); // 右后腿
+                
+                // 尾巴
+                sketch.noStroke();
+                sketch.ellipse(x - 25, y, 10, 10);
+            }
+        });
+
+        // 演示区p5.js画布
+        new p5(function(sketch) {
+            let chickens = 5;
+            let rabbits = 3;
+            let slider1, slider2;
+            let count1, count2;
+            let heads, legs;
+            
+            sketch.setup = function() {
+                const canvas = sketch.createCanvas(sketch.windowWidth > 768 ? 800 : 400, 320);
+                canvas.parent('demoCanvas');
+                
+                // 获取DOM元素
+                slider1 = document.getElementById('chickenSlider');
+                slider2 = document.getElementById('rabbitSlider');
+                count1 = document.getElementById('chickenCount');
+                count2 = document.getElementById('rabbitCount');
+                heads = document.getElementById('totalHeads');
+                legs = document.getElementById('totalLegs');
+                
+                // 添加事件监听器
+                slider1.addEventListener('input', updateValues);
+                slider2.addEventListener('input', updateValues);
+                
+                updateValues();
+            };
+            
+            function updateValues() {
+                chickens = parseInt(slider1.value);
+                rabbits = parseInt(slider2.value);
+                count1.textContent = chickens;
+                count2.textContent = rabbits;
+                heads.textContent = chickens + rabbits;
+                legs.textContent = chickens * 2 + rabbits * 4;
+            }
+            
+            sketch.draw = function() {
+                sketch.background(243, 244, 246);
+                
+                // 绘制标题
+                sketch.fill(59, 130, 246);
+                sketch.textSize(18);
+                sketch.textAlign(sketch.CENTER);
+                sketch.text(`鸡: ${chickens}只, 兔: ${rabbits}只`, sketch.width/2, 30);
+                sketch.text(`总头数: ${chickens + rabbits}, 总脚数: ${chickens * 2 + rabbits * 4}`, sketch.width/2, 60);
+                
+                // 计算每行显示的数量
+                const maxPerRow = Math.floor(sketch.width / 80);
+                
+                // 绘制鸡
+                for (let i = 0; i < chickens; i++) {
+                    const row = Math.floor(i / maxPerRow);
+                    const col = i % maxPerRow;
+                    const x = 50 + col * 80;
+                    const y = 100 + row * 80;
+                    drawChicken(x, y);
+                }
+                
+                // 绘制兔子
+                for (let i = 0; i < rabbits; i++) {
+                    const row = Math.floor(i / maxPerRow);
+                    const col = i % maxPerRow;
+                    const x = 50 + col * 80;
+                    const y = 100 + row * 80 + 40;
+                    drawRabbit(x, y);
+                }
+            };
+            
+            function drawChicken(x, y) {
+                // 身体
+                sketch.fill(249, 115, 22);
+                sketch.ellipse(x, y, 30, 25);
+                
+                // 头部
+                sketch.ellipse(x + 20, y - 8, 15, 15);
+                
+                // 鸡冠
+                sketch.fill(255, 0, 0);
+                sketch.beginShape();
+                sketch.vertex(x + 20, y - 18);
+                sketch.vertex(x + 23, y - 23);
+                sketch.vertex(x + 26, y - 18);
+                sketch.vertex(x + 29, y - 23);
+                sketch.vertex(x + 32, y - 18);
+                sketch.endShape();
+                
+                // 嘴
+                sketch.fill(255, 165, 0);
+                sketch.triangle(x + 30, y - 8, x + 35, y - 12, x + 35, y - 4);
+                
+                // 眼睛
+                sketch.fill(0);
+                sketch.ellipse(x + 25, y - 10, 3, 3);
+                
+                // 腿（2条细腿）
+                sketch.stroke(255, 165, 0);
+                sketch.strokeWeight(3);
+                sketch.line(x - 7, y + 12, x - 12, y + 22);
+                sketch.line(x + 0, y + 12, x + 5, y + 22);
+            }
+            
+            function drawRabbit(x, y) {
+                // 身体
+                sketch.fill(59, 130, 246);
+                sketch.ellipse(x, y, 35, 30);
+                
+                // 头部
+                sketch.ellipse(x + 25, y - 5, 20, 20);
+                
+                // 耳朵
+                sketch.fill(255, 192, 203);
+                sketch.triangle(x + 22, y - 25, x + 25, y - 40, x + 28, y - 25);
+                sketch.triangle(x + 28, y - 25, x + 31, y - 40, x + 34, y - 25);
+                
+                // 眼睛
+                sketch.fill(255, 0, 0);
+                sketch.ellipse(x + 30, y - 10, 4, 4);
+                
+                // 嘴（三瓣嘴）
+                sketch.stroke(0);
+                sketch.strokeWeight(1);
+                sketch.noFill();
+                sketch.arc(x + 33, y - 5, 8, 8, 0, sketch.PI);
+                
+                // 腿（4条粗腿）
+                sketch.stroke(0);
+                sketch.strokeWeight(4);
+                sketch.line(x - 10, y + 15, x - 15, y + 25); // 左前腿
+                sketch.line(x + 5, y + 15, x + 10, y + 25); // 右前腿
+                sketch.line(x - 10, y + 20, x - 15, y + 30); // 左后腿
+                sketch.line(x + 5, y + 20, x + 10, y + 30); // 右后腿
+                
+                // 尾巴
+                sketch.noStroke();
+                sketch.fill(255);
+                sketch.ellipse(x - 20, y, 8, 8);
+            }
+        });
+
+        // 移动端菜单切换
+        document.getElementById('menuBtn').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    
+                    // 关闭移动端菜单
+                    document.getElementById('mobileMenu').classList.add('hidden');
+                }
+            });
+        });
+
+        // 测验题检查答案
+        function checkAnswer(questionNum) {
+            const correctAnswers = [
+                { chicken: 10, rabbit: 5 },
+                { chicken: 12, rabbit: 10 },
+                { chicken: 3, rabbit: 5 }
+            ];
+            
+            const chickenInput = document.getElementById(`quiz${questionNum}Chicken`);
+            const rabbitInput = document.getElementById(`quiz${questionNum}Rabbit`);
+            const feedback = document.getElementById(`quiz${questionNum}Feedback`);
+            
+            const userChicken = parseInt(chickenInput.value) || 0;
+            const userRabbit = parseInt(rabbitInput.value) || 0;
+            
+            const correctChicken = correctAnswers[questionNum - 1].chicken;
+            const correctRabbit = correctAnswers[questionNum - 1].rabbit;
+            
+            feedback.classList.remove('hidden');
+            
+            if (userChicken === correctChicken && userRabbit === correctRabbit) {
+                feedback.innerHTML = `
+                    <div class="p-3 bg-green-100 border border-green-300 rounded-lg">
+                        <div class="flex items-center">
+                            <i class="fa-solid fa-check-circle text-green-500 mr-2"></i>
+                            <div>
+                                <h4 class="font-semibold text-green-800">回答正确！</h4>
+                                <p class="text-green-700 text-sm">鸡的数量是${correctChicken}，兔的数量是${correctRabbit}。</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                chickenInput.classList.add('border-green-500');
+                rabbitInput.classList.add('border-green-500');
+            } else {
+                feedback.innerHTML = `
+                    <div class="p-3 bg-red-100 border border-red-300 rounded-lg">
+                        <div class="flex items-center">
+                            <i class="fa-solid fa-times-circle text-red-500 mr-2"></i>
+                            <div>
+                                <h4 class="font-semibold text-red-800">回答错误</h4>
+                                <p class="text-red-700 text-sm">正确答案是：鸡${correctChicken}只，兔${correctRabbit}只。</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                chickenInput.classList.add('border-red-500');
+                rabbitInput.classList.add('border-red-500');
+            }
+            
+            // 检查是否所有题目都已回答
+            checkAllAnswered();
+        }
+
+        // 检查是否所有题目都已回答
+        function checkAllAnswered() {
+            const feedbacks = document.querySelectorAll('[id^="quiz"][id$="Feedback"]');
+            let allAnswered = true;
+            
+            feedbacks.forEach(feedback => {
+                if (feedback.classList.contains('hidden')) {
+                    allAnswered = false;
+                }
+            });
+            
+            if (allAnswered) {
+                calculateScore();
+            }
+        }
+
+        // 计算测验分数
+        function calculateScore() {
+            const correctAnswers = [
+                { chicken: 10, rabbit: 5 },
+                { chicken: 12, rabbit: 10 },
+                { chicken: 3, rabbit: 5 }
+            ];
+            
+            let correctCount = 0;
+            
+            for (let i = 1; i <= 3; i++) {
+                const chickenInput = document.getElementById(`quiz${i}Chicken`);
+                const rabbitInput = document.getElementById(`quiz${i}Rabbit`);
+                
+                const userChicken = parseInt(chickenInput.value) || 0;
+                const userRabbit = parseInt(rabbitInput.value) || 0;
+                
+                const correctChicken = correctAnswers[i - 1].chicken;
+                const correctRabbit = correctAnswers[i - 1].rabbit;
+                
+                if (userChicken === correctChicken && userRabbit === correctRabbit) {
+                    correctCount++;
+                }
+            }
+            
+            const score = Math.round((correctCount / 3) * 100);
+            
+            document.getElementById('correctAnswers').textContent = correctCount;
+            document.getElementById('quizScore').textContent = `${score}%`;
+            document.getElementById('quizResult').classList.remove('hidden');
+            
+            // 添加动画效果
+            const scoreElement = document.getElementById('quizScore');
+            let currentScore = 0;
+            const interval = setInterval(() => {
+                currentScore++;
+                scoreElement.textContent = `${currentScore}%`;
+                if (currentScore >= score) {
+                    clearInterval(interval);
+                }
+            }, 20);
+        }
+
+        // 重置测验
+        function resetQuiz() {
+            for (let i = 1; i <= 3; i++) {
+                document.getElementById(`quiz${i}Chicken`).value = '';
+                document.getElementById(`quiz${i}Rabbit`).value = '';
+                document.getElementById(`quiz${i}Feedback`).classList.add('hidden');
+                
+                document.getElementById(`quiz${i}Chicken`).classList.remove('border-green-500', 'border-red-500');
+                document.getElementById(`quiz${i}Rabbit`).classList.remove('border-green-500', 'border-red-500');
+            }
+            
+            document.getElementById('quizResult').classList.add('hidden');
+        }
+
+        // 计算器功能
+        document.getElementById('calculateBtn').addEventListener('click', calculateChickensAndRabbits);
+        
+        function calculateChickensAndRabbits() {
+            const headsInput = document.getElementById('totalHeadsInput');
+            const legsInput = document.getElementById('totalLegsInput');
+            const result = document.getElementById('calculatorResult');
+            const error = document.getElementById('calculatorError');
+            const errorMessage = document.getElementById('errorMessage');
+            const resultChickens = document.getElementById('resultChickens');
+            const resultRabbits = document.getElementById('resultRabbits');
+            const stepsContent = document.getElementById('stepsContent');
+            
+            // 隐藏结果和错误
+            result.classList.add('hidden');
+            error.classList.add('hidden');
+            
+            // 获取输入值
+            const heads = parseInt(headsInput.value);
+            const legs = parseInt(legsInput.value);
+            
+            // 验证输入
+            if (isNaN(heads) || isNaN(legs) || heads <= 0 || legs <= 0) {
+                errorMessage.textContent = '请输入有效的正整数头数和脚数';
+                error.classList.remove('hidden');
+                return;
+            }
+            
+            if (legs % 2 !== 0) {
+                errorMessage.textContent = '脚的数量必须是偶数';
+                error.classList.remove('hidden');
+                return;
+            }
+            
+            if (legs < heads * 2 || legs > heads * 4) {
+                errorMessage.textContent = '脚的数量超出了可能的范围（2×头数 到 4×头数）';
+                error.classList.remove('hidden');
+                return;
+            }
+            
+            // 计算鸡和兔子的数量
+            const rabbits = (legs - 2 * heads) / 2;
+            const chickens = heads - rabbits;
+            
+            // 显示结果
+            resultChickens.textContent = chickens;
+            resultRabbits.textContent = rabbits;
+            result.classList.remove('hidden');
+            
+            // 显示计算步骤
+            stepsContent.innerHTML = `
+                <p>1. 设鸡的数量为 x，兔的数量为 y</p>
+                <p>2. 根据头数建立方程：x + y = ${heads}</p>
+                <p>3. 根据脚数建立方程：2x + 4y = ${legs}</p>
+                <p>4. 解方程：</p>
+                <p class="ml-4">从第一个方程得：x = ${heads} - y</p>
+                <p class="ml-4">代入第二个方程：2(${heads} - y) + 4y = ${legs}</p>
+                <p class="ml-4">化简得：${2*heads} - 2y + 4y = ${legs}</p>
+                <p class="ml-4">即：${2*heads} + 2y = ${legs}</p>
+                <p class="ml-4">解得：2y = ${legs - 2*heads} → y = ${legs - 2*heads} ÷ 2 = ${rabbits}</p>
+                <p class="ml-4">代入 x = ${heads} - ${rabbits} → x = ${chickens}</p>
+                <p>5. 结果：鸡有 ${chickens} 只，兔有 ${rabbits} 只</p>
+            `;
+        }
+
+        // 导航栏滚动效果
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.classList.add('py-2');
+                header.classList.remove('py-3');
+            } else {
+                header.classList.add('py-3');
+                header.classList.remove('py-2');
+            }
+        });
+    </script>
+</body>
+</html>
