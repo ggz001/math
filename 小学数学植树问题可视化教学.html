@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>小学数学植树问题可视化教学</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.7.0/lib/p5.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#4F46E5',
+            secondary: '#10B981',
+            accent: '#F59E0B',
+            neutral: '#1F2937',
+            'neutral-light': '#F3F4F6'
+          },
+          fontFamily: {
+            inter: ['Inter', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .text-shadow {
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .transition-custom {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .bg-gradient-primary {
+        background: linear-gradient(135deg, #4F46E5 0%, #818CF8 100%);
+      }
+      .card-hover {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      }
+    }
+  </style>
+</head>
+<body class="font-inter bg-neutral-light text-neutral min-h-screen flex flex-col">
+  <!-- 导航栏 -->
+  <header class="bg-white shadow-md sticky top-0 z-50 transition-all duration-300" id="navbar">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-2">
+        <i class="fa-solid fa-tree text-secondary text-2xl"></i>
+        <h1 class="text-xl md:text-2xl font-bold text-primary">植树问题<span class="text-secondary">可视化</span></h1>
+      </div>
+      
+      <nav class="hidden md:flex space-x-8">
+        <a href="#concept" class="text-neutral hover:text-primary transition-custom font-medium">概念</a>
+        <a href="#examples" class="text-neutral hover:text-primary transition-custom font-medium">例题</a>
+        <a href="#simulation" class="text-neutral hover:text-primary transition-custom font-medium">模拟考题</a>
+        <a href="#practice" class="text-neutral hover:text-primary transition-custom font-medium">练习题</a>
+      </nav>
+      
+      <button class="md:hidden text-neutral hover:text-primary" id="menu-toggle">
+        <i class="fa-solid fa-bars text-xl"></i>
+      </button>
+    </div>
+    
+    <!-- 移动端菜单 -->
+    <div class="md:hidden hidden bg-white shadow-lg absolute w-full" id="mobile-menu">
+      <div class="container mx-auto px-4 py-3 flex flex-col space-y-4">
+        <a href="#concept" class="text-neutral hover:text-primary transition-custom font-medium py-2 border-b border-gray-100">概念</a>
+        <a href="#examples" class="text-neutral hover:text-primary transition-custom font-medium py-2 border-b border-gray-100">例题</a>
+        <a href="#simulation" class="text-neutral hover:text-primary transition-custom font-medium py-2 border-b border-gray-100">模拟考题</a>
+        <a href="#practice" class="text-neutral hover:text-primary transition-custom font-medium py-2">练习题</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主内容 -->
+  <main class="flex-grow">
+    <!-- 英雄区域 -->
+    <section class="bg-gradient-primary text-white py-16 md:py-24">
+      <div class="container mx-auto px-4 flex flex-col md:flex-row items-center">
+        <div class="md:w-1/2 mb-8 md:mb-0">
+          <h2 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight text-shadow mb-4">
+            轻松掌握<br>植树问题
+          </h2>
+          <p class="text-lg md:text-xl opacity-90 mb-8 max-w-lg">
+            通过交互式可视化学习，深入理解小学数学中的植树问题，掌握解题技巧。
+          </p>
+          <div class="flex flex-wrap gap-4">
+            <a href="#examples" class="bg-white text-primary px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-custom">
+              开始学习 <i class="fa-solid fa-arrow-right ml-2"></i>
+            </a>
+            <a href="#concept" class="bg-transparent border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/10 transition-custom">
+              了解概念
+            </a>
+          </div>
+        </div>
+        <div class="md:w-1/2 flex justify-center">
+          <div class="relative w-64 h-64 md:w-80 md:h-80">
+            <div id="hero-canvas" class="w-full h-full"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 概念解释 -->
+    <section id="concept" class="py-16 bg-white">
+      <div class="container mx-auto px-4">
+        <div class="text-center mb-12">
+          <h2 class="text-3xl md:text-4xl font-bold text-neutral mb-4">植树问题概念</h2>
+          <p class="text-gray-600 max-w-2xl mx-auto">植树问题是小学数学中的经典应用题，主要研究在一定长度的线路上，根据间隔距离种植树木的数量问题。</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <!-- 两端都种 -->
+          <div class="bg-neutral-light rounded-xl p-6 shadow-md card-hover">
+            <div class="flex items-center justify-center w-16 h-16 bg-primary/10 text-primary rounded-full mb-4">
+              <i class="fa-solid fa-arrows-left-right text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-3">两端都种树</h3>
+            <p class="text-gray-600 mb-4">线路的两端都种树时，棵数比间隔数多1。</p>
+            <div class="bg-white p-4 rounded-lg border border-gray-200">
+              <p class="font-medium">公式：</p>
+              <p class="text-primary font-bold">棵数 = 间隔数 + 1</p>
+            </div>
+            <div class="mt-4 h-32 bg-white rounded-lg border border-gray-200 p-2" id="concept-1-canvas"></div>
+          </div>
+          
+          <!-- 一端种一端不种 -->
+          <div class="bg-neutral-light rounded-xl p-6 shadow-md card-hover">
+            <div class="flex items-center justify-center w-16 h-16 bg-secondary/10 text-secondary rounded-full mb-4">
+              <i class="fa-solid fa-arrow-right text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-3">一端种树一端不种</h3>
+            <p class="text-gray-600 mb-4">线路的一端种树，另一端不种时，棵数与间隔数相等。</p>
+            <div class="bg-white p-4 rounded-lg border border-gray-200">
+              <p class="font-medium">公式：</p>
+              <p class="text-secondary font-bold">棵数 = 间隔数</p>
+            </div>
+            <div class="mt-4 h-32 bg-white rounded-lg border border-gray-200 p-2" id="concept-2-canvas"></div>
+          </div>
+          
+          <!-- 两端都不种 -->
+          <div class="bg-neutral-light rounded-xl p-6 shadow-md card-hover">
+            <div class="flex items-center justify-center w-16 h-16 bg-accent/10 text-accent rounded-full mb-4">
+              <i class="fa-solid fa-ban text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-3">两端都不种树</h3>
+            <p class="text-gray-600 mb-4">线路的两端都不种树时，棵数比间隔数少1。</p>
+            <div class="bg-white p-4 rounded-lg border border-gray-200">
+              <p class="font-medium">公式：</p>
+              <p class="text-accent font-bold">棵数 = 间隔数 - 1</p>
+            </div>
+            <div class="mt-4 h-32 bg-white rounded-lg border border-gray-200 p-2" id="concept-3-canvas"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 例题解析 -->
+    <section id="examples" class="py-16 bg-neutral-light">
+      <div class="container mx-auto px-4">
+        <div class="text-center mb-12">
+          <h2 class="text-3xl md:text-4xl font-bold text-neutral mb-4">典型例题解析</h2>
+          <p class="text-gray-600 max-w-2xl mx-auto">通过实际例题，深入理解植树问题的解题思路和方法。</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <!-- 例题1 -->
+          <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover">
+            <div class="bg-primary text-white p-4">
+              <h3 class="text-xl font-bold">例题 1</h3>
+              <p class="opacity-90">两端都种树</p>
+            </div>
+            <div class="p-6">
+              <div class="mb-4 p-4 bg-blue-50 border-l-4 border-primary rounded-r">
+                <p class="font-medium">题目：</p>
+                <p>在一条长20米的小路一侧种树，每隔5米种一棵，两端都要种，一共要种多少棵树？</p>
+              </div>
+              
+              <div class="mb-4">
+                <p class="font-medium mb-2">解题步骤：</p>
+                <ol class="list-decimal pl-5 space-y-2">
+                  <li>计算间隔数：20 ÷ 5 = 4个间隔</li>
+                  <li>两端都种树，棵数 = 间隔数 + 1</li>
+                  <li>所以，棵数 = 4 + 1 = 5棵</li>
+                </ol>
+              </div>
+              
+              <div class="bg-primary/5 p-4 rounded-lg border border-primary/20 mb-4">
+                <p class="font-medium text-primary">答案：一共要种5棵树。</p>
+              </div>
+              
+              <div class="h-48 bg-white rounded-lg border border-gray-200 p-2" id="example-1-canvas"></div>
+            </div>
+          </div>
+          
+          <!-- 例题2 -->
+          <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover">
+            <div class="bg-secondary text-white p-4">
+              <h3 class="text-xl font-bold">例题 2</h3>
+              <p class="opacity-90">一端种树一端不种</p>
+            </div>
+            <div class="p-6">
+              <div class="mb-4 p-4 bg-green-50 border-l-4 border-secondary rounded-r">
+                <p class="font-medium">题目：</p>
+                <p>在一个周长为30米的圆形池塘边种树，每隔3米种一棵，一共要种多少棵树？</p>
+              </div>
+              
+              <div class="mb-4">
+                <p class="font-medium mb-2">解题步骤：</p>
+                <ol class="list-decimal pl-5 space-y-2">
+                  <li>圆形属于一端种树一端不种的情况，棵数 = 间隔数</li>
+                  <li>计算间隔数：30 ÷ 3 = 10个间隔</li>
+                  <li>所以，棵数 = 10棵</li>
+                </ol>
+              </div>
+              
+              <div class="bg-secondary/5 p-4 rounded-lg border border-secondary/20 mb-4">
+                <p class="font-medium text-secondary">答案：一共要种10棵树。</p>
+              </div>
+              
+              <div class="h-48 bg-white rounded-lg border border-gray-200 p-2" id="example-2-canvas"></div>
+            </div>
+          </div>
+          
+          <!-- 例题3 -->
+          <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover">
+            <div class="bg-accent text-white p-4">
+              <h3 class="text-xl font-bold">例题 3</h3>
+              <p class="opacity-90">两端都不种树</p>
+            </div>
+            <div class="p-6">
+              <div class="mb-4 p-4 bg-yellow-50 border-l-4 border-accent rounded-r">
+                <p class="font-medium">题目：</p>
+                <p>在一条长40米的马路一侧安装路灯，每隔8米安装一盏，两端都不安，一共要安装多少盏路灯？</p>
+              </div>
+              
+              <div class="mb-4">
+                <p class="font-medium mb-2">解题步骤：</p>
+                <ol class="list-decimal pl-5 space-y-2">
+                  <li>计算间隔数：40 ÷ 8 = 5个间隔</li>
+                  <li>两端都不安，盏数 = 间隔数 - 1</li>
+                  <li>所以，盏数 = 5 - 1 = 4盏</li>
+                </ol>
+              </div>
+              
+              <div class="bg-accent/5 p-4 rounded-lg border border-accent/20 mb-4">
+                <p class="font-medium text-accent">答案：一共要安装4盏路灯。</p>
+              </div>
+              
+              <div class="h-48 bg-white rounded-lg border border-gray-200 p-2" id="example-3-canvas"></div>
+            </div>
+          </div>
+          
+          <!-- 例题4 -->
+          <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover">
+            <div class="bg-purple-600 text-white p-4">
+              <h3 class="text-xl font-bold">例题 4</h3>
+              <p class="opacity-90">复杂应用</p>
+            </div>
+            <div class="p-6">
+              <div class="mb-4 p-4 bg-purple-50 border-l-4 border-purple-600 rounded-r">
+                <p class="font-medium">题目：</p>
+                <p>在一条长50米的小路两侧种树，每隔5米种一棵，两端都种，一共要种多少棵树？</p>
+              </div>
+              
+              <div class="mb-4">
+                <p class="font-medium mb-2">解题步骤：</p>
+                <ol class="list-decimal pl-5 space-y-2">
+                  <li>先计算一侧的情况：间隔数 = 50 ÷ 5 = 10个</li>
+                  <li>两端都种，一侧棵数 = 10 + 1 = 11棵</li>
+                  <li>两侧种树总数 = 11 × 2 = 22棵</li>
+                </ol>
+              </div>
+              
+              <div class="bg-purple-50 p-4 rounded-lg border border-purple-200 mb-4">
+                <p class="font-medium text-purple-600">答案：一共要种22棵树。</p>
+              </div>
+              
+              <div class="h-48 bg-white rounded-lg border border-gray-200 p-2" id="example-4-canvas"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 模拟考题 -->
+    <section id="simulation" class="py-16 bg-white">
+      <div class="container mx-auto px-4">
+        <div class="text-center mb-12">
+          <h2 class="text-3xl md:text-4xl font-bold text-neutral mb-4">模拟考题</h2>
+          <p class="text-gray-600 max-w-2xl mx-auto">测试一下你对植树问题的掌握程度，尝试解决以下问题。</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <!-- 题目1 -->
+          <div class="bg-neutral-light rounded-xl p-6 shadow-md card-hover">
+            <div class="flex items-center mb-4">
+              <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                <span class="font-bold">1</span>
+              </div>
+              <h3 class="text-xl font-bold ml-3">基础题</h3>
+            </div>
+            
+            <div class="mb-4 p-4 bg-white rounded-lg border border-gray-200">
+              <p class="font-medium mb-2">题目：</p>
+              <p>在一条长36米的走廊一侧摆花盆，每隔4米摆一盆，两端都要摆，一共要摆多少盆花？</p>
+            </div>
+            
+            <div class="mb-4">
+              <p class="font-medium mb-2">选项：</p>
+              <div class="grid grid-cols-2 gap-2">
+                <button class="bg-white border border-gray-300 rounded-lg p-2 hover:bg-gray-50 transition-custom answer-btn" data-correct="false">A. 8盆</button>
+                <button class="bg-white border border-gray-300 rounded-lg p-2 hover:bg-gray-50 transition-custom answer-btn" data-correct="true">B. 10盆</button>
+                <button class="bg-white border border-gray-300 rounded-lg p-2 hover:bg-gray-50 transition-custom answer-btn" data-correct="false">C. 9盆</button>
+                <button class="bg-white border border-gray-300 rounded-lg p-2 hover:bg-gray-50 transition-custom answer-btn" data-correct="false">D. 11盆</button>
+              </div>
+            </div>
+            
+            <div class="feedback hidden p-4 rounded-lg mb-2"></div>
+            
+            <button class="show-answer-btn w-full py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-custom hidden">
+              显示答案解析
+            </button>
+            
+            <div class="answer-explanation hidden p-4 bg-white rounded-lg border border-gray-200 mt-4">
+              <p class="font-medium text-primary">正确答案：B. 10盆</p>
+              <p class="mt-2">解析：间隔数 = 36 ÷ 4 = 9个，两端都摆，盆数 = 间隔数 + 1 = 9 + 1 = 10盆。</p>
+            </div>
+          </div>
+          
+          <!-- 题目2 -->
+          <div class="bg-neutral-light rounded-xl p-6 shadow-md card-hover">
+            <div class="flex items-center mb-4">
+              <div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+                <span class="font-bold">2</span>
+              </div>
+              <h3 class="text-xl font-bold ml-3">进阶题</h3>
+            </div>
+            
+            <div class="mb-4 p-4 bg-white rounded-lg border border-gray-200">
+              <p class="font-medium mb-2">题目：</p>
+              <p>在一个正方形池塘四周种树，每边种6棵，四个角上都要种，一共要种多少棵树？</p>
+            </div>
+            
+            <div class="mb-4">
+              <p class="font-medium mb-2">选项：</p>
+              <div class="grid grid-cols-2 gap-2">
+                <button class="bg-white border border-gray-300 rounded-lg p-2 hover:bg-gray-50 transition-custom answer-btn" data-correct="false">A. 24棵</button>
+                <button class="bg-white border border-gray-300 rounded-lg p-2 hover:bg-gray-50 transition-custom answer-btn" data-correct="false">B. 20棵</button>
+                <button class="bg-white border border-gray-300 rounded-lg p-2 hover:bg-gray-50 transition-custom answer-btn" data-correct="true">C. 22棵</button>
+                <button class="bg-white border border-gray-300 rounded-lg p-2 hover:bg-gray-50 transition-custom answer-btn" data-correct="false">D. 18棵</button>
+              </div>
+            </div>
+            
+            <div class="feedback hidden p-4 rounded-lg mb-2"></div>
+            
+            <button class="show-answer-btn w-full py-2 bg-secondary text-white rounded-lg hover:bg-secondary/90 transition-custom hidden">
+              显示答案解析
+            </button>
+            
+            <div class="answer-explanation hidden p-4 bg-white rounded-lg border border-gray-200 mt-4">
+              <p class="font-medium text-secondary">正确答案：C. 22棵</p>
+              <p class="mt-2">解析：每边6棵，四条边共6×4=24棵，但四个角上的树重复计算了，所以总数 = 24 - 2 = 22棵。</p>
+            </div>
+          </div>
+          
+          <!-- 题目3 -->
+          <div class="bg-neutral-light rounded-xl p-6 shadow-md card-hover">
+            <div class="flex items-center mb-4">
+              <div class="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center text-accent">
+                <span class="font-bold">3</span>
+              </div>
+              <h3 class="text-xl font-bold ml-3">挑战题</h3>
+            </div>
+            
+            <div class="mb-4 p-4 bg-white rounded-lg border border-gray-200">
+              <p class="font-medium mb-2">题目：</p>
+              <p>在一条道路的一侧种树，每隔5米种一棵，一共种了25棵树。从第一棵到最后一棵的距离是多少米？</p>
+            </div>
+            
+            <div class="mb-4">
+              <p class="font-medium mb-2">选项：</p>
+              <div class="grid grid-cols-2 gap-2">
+                <button class="bg-white border border-gray-300 rounded-lg p-2 hover:bg-gray-50 transition-custom answer-btn" data-correct="false">A. 120米</button>
+                <button class="bg-white border border-gray-300 rounded-lg p-2 hover:bg-gray-50 transition-custom answer-btn" data-correct="true">B. 125米</button>
+                <button class="bg-white border border-gray-300 rounded-lg p-2 hover:bg-gray-50 transition-custom answer-btn" data-correct="false">C. 130米</button>
+                <button class="bg-white border border-gray-300 rounded-lg p-2 hover:bg-gray-50 transition-custom answer-btn" data-correct="false">D. 115米</button>
+              </div>
+            </div>
+            
+            <div class="feedback hidden p-4 rounded-lg mb-2"></div>
+            
+            <button class="show-answer-btn w-full py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-custom hidden">
+              显示答案解析
+            </button>
+            
+            <div class="answer-explanation hidden p-4 bg-white rounded-lg border border-gray-200 mt-4">
+              <p class="font-medium text-accent">正确答案：B. 125米</p>
+              <p class="mt-2">解析：25棵树有24个间隔，距离 = 间隔数 × 间隔长度 = 24×5 = 120米。</p>
+            </div>
+          </div>
+          
+          <!-- 题目4 -->
+          <div class="bg-neutral-light rounded-xl p-6 shadow-md card-hover">
+            <div class="flex items-center mb-4">
+              <div class="w-10 h-10 rounded-full bg-purple-600/10 flex items-center justify-center text-purple-600">
+                <span class="font-bold">4</span>
+              </div>
+              <h3 class="text-xl font-bold ml-3">应用题</h3>
+            </div>
+            
+            <div class="mb-4 p-4 bg-white rounded-lg border border-gray-200">
+              <p class="font-medium mb-2">题目：</p>
+              <p>在一条长100米的道路两侧安装路灯，每隔10米安装一盏，两端都要安装，一共需要安装多少盏路灯？</p>
+            </div>
+            
+            <div class="mb-4">
+              <p class="font-medium mb-2">选项：</p>
+              <div class="grid grid-cols-2 gap-2">
+                <button class="bg-white border border-gray-300 rounded-lg p-2 hover:bg-gray-50 transition-custom answer-btn" data-correct="false">A. 10盏</button>
+                <button class="bg-white border border-gray-300 rounded-lg p-2 hover:bg-gray-50 transition-custom answer-btn" data-correct="false">B. 11盏</button>
+                <button class="bg-white border border-gray-300 rounded-lg p-2 hover:bg-gray-50 transition-custom answer-btn" data-correct="false">C. 20盏</button>
+                <button class="bg-white border border-gray-300 rounded-lg p-2 hover:bg-gray-50 transition-custom answer-btn" data-correct="true">D. 22盏</button>
+              </div>
+            </div>
+            
+            <div class="feedback hidden p-4 rounded-lg mb-2"></div>
+            
+            <button class="show-answer-btn w-full py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-600/90 transition-custom hidden">
+              显示答案解析
+            </button>
+            
+            <div class="answer-explanation hidden p-4 bg-white rounded-lg border border-gray-200 mt-4">
+              <p class="font-medium text-purple-600">正确答案：D. 22盏</p>
+              <p class="mt-2">解析：一侧间隔数 = 100 ÷ 10 = 10，一侧灯数 = 10 + 1 = 11盏，两侧共11×2 = 22盏。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 互动练习 -->
+    <section id="practice" class="py-16 bg-neutral-light">
+      <div class="container mx-auto px-4">
+        <div class="text-center mb-12">
+          <h2 class="text-3xl md:text-4xl font-bold text-neutral mb-4">互动练习</h2>
+          <p class="text-gray-600 max-w-2xl mx-auto">调整参数，实时观察不同情况下的植树问题解决方案。</p>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2">
+              <div class="bg-neutral-light rounded-lg p-4 mb-6">
+                <h3 class="text-xl font-bold mb-4">可视化演示</h3>
+                <div class="h-64 md:h-80 bg-white rounded-lg border border-gray-200 p-2" id="practice-canvas"></div>
+              </div>
+              
+              <div class="bg-primary/5 rounded-lg p-4 border border-primary/20">
+                <h3 class="text-lg font-bold mb-2 text-primary">计算结果</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p class="text-gray-600">总长度：<span id="result-length" class="font-bold">20米</span></p>
+                    <p class="text-gray-600">间隔距离：<span id="result-spacing" class="font-bold">5米</span></p>
+                    <p class="text-gray-600">间隔数：<span id="result-intervals" class="font-bold">4个</span></p>
+                  </div>
+                  <div>
+                    <p class="text-gray-600">种植类型：<span id="result-type" class="font-bold">两端都种</span></p>
+                    <p class="text-gray-600">总棵数：<span id="result-trees" class="font-bold text-primary">5棵</span></p>
+                    <p class="text-gray-600">公式：<span id="result-formula" class="font-bold">棵数 = 间隔数 + 1</span></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 class="text-xl font-bold mb-4">参数设置</h3>
+              
+              <div class="space-y-6">
+                <div>
+                  <label class="block text-gray-700 font-medium mb-2" for="length">总长度 (米)</label>
+                  <input type="range" id="length" min="10" max="100" step="5" value="20" 
+                         class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary">
+                  <div class="flex justify-between text-sm text-gray-500 mt-1">
+                    <span>10</span>
+                    <span id="length-value">20</span>
+                    <span>100</span>
+                  </div>
+                </div>
+                
+                <div>
+                  <label class="block text-gray-700 font-medium mb-2" for="spacing">间隔距离 (米)</label>
+                  <input type="range" id="spacing" min="1" max="10" step="1" value="5" 
+                         class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary">
+                  <div class="flex justify-between text-sm text-gray-500 mt-1">
+                    <span>1</span>
+                    <span id="spacing-value">5</span>
+                    <span>10</span>
+                  </div>
+                </div>
+                
+                <div>
+                  <label class="block text-gray-700 font-medium mb-2">种植类型</label>
+                  <div class="space-y-2">
+                    <label class="flex items-center p-2 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-custom">
+                      <input type="radio" name="type" value="both" checked class="w-4 h-4 text-primary focus:ring-primary">
+                      <span class="ml-2">两端都种</span>
+                    </label>
+                    <label class="flex items-center p-2 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-custom">
+                      <input type="radio" name="type" value="one" class="w-4 h-4 text-secondary focus:ring-secondary">
+                      <span class="ml-2">一端种一端不种</span>
+                    </label>
+                    <label class="flex items-center p-2 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-custom">
+                      <input type="radio" name="type" value="none" class="w-4 h-4 text-accent focus:ring-accent">
+                      <span class="ml-2">两端都不种</span>
+                    </label>
+                  </div>
+                </div>
+                
+                <button id="calculate-btn" class="w-full py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-custom shadow-md hover:shadow-lg">
+                  计算并更新 <i class="fa-solid fa-refresh ml-2"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="bg-neutral text-white py-12">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div>
+          <div class="flex items-center space-x-2 mb-4">
+            <i class="fa-solid fa-tree text-secondary text-2xl"></i>
+            <h3 class="text-xl font-bold">植树问题可视化</h3>
+          </div>
+          <p class="text-gray-400 mb-4">通过交互式可视化学习，轻松掌握小学数学中的植树问题。</p>
+          <div class="flex space-x-4">
+            <a href="#" class="text-gray-400 hover:text-white transition-custom">
+              <i class="fa-brands fa-weixin text-xl"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-white transition-custom">
+              <i class="fa-brands fa-weibo text-xl"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-white transition-custom">
+              <i class="fa-brands fa-github text-xl"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-semibold mb-4">快速链接</h4>
+          <ul class="space-y-2">
+            <li><a href="#concept" class="text-gray-400 hover:text-white transition-custom">概念解释</a></li>
+            <li><a href="#examples" class="text-gray-400 hover:text-white transition-custom">典型例题</a></li>
+            <li><a href="#simulation" class="text-gray-400 hover:text-white transition-custom">模拟考题</a></li>
+            <li><a href="#practice" class="text-gray-400 hover:text-white transition-custom">互动练习</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-semibold mb-4">联系我们</h4>
+          <ul class="space-y-2">
+            <li class="flex items-center text-gray-400">
+              <i class="fa-solid fa-envelope mr-2"></i>
+              <span>contact@example.com</span>
+            </li>
+            <li class="flex items-center text-gray-400">
+              <i class="fa-solid fa-phone mr-2"></i>
+              <span>400-123-4567</span>
+            </li>
+            <li class="flex items-start text-gray-400">
+              <i class="fa-solid fa-map-marker-alt mr-2 mt-1"></i>
+              <span>北京市海淀区中关村南大街5号</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+        <p>© 2025 植树问题可视化教学平台 版权所有</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // 导航栏滚动效果
+    window.addEventListener('scroll', function() {
+      const navbar = document.getElementById('navbar');
+      if (window.scrollY > 50) {
+        navbar.classList.add('py-2');
+        navbar.classList.add('bg-white/95');
+        navbar.classList.add('backdrop-blur-sm');
+        navbar.classList.remove('py-3');
+      } else {
+        navbar.classList.add('py-3');
+        navbar.classList.remove('py-2');
+        navbar.classList.remove('bg-white/95');
+        navbar.classList.remove('backdrop-blur-sm');
+      }
+    });
+    
+    // 移动端菜单切换
+    document.getElementById('menu-toggle').addEventListener('click', function() {
+      const mobileMenu = document.getElementById('mobile-menu');
+      mobileMenu.classList.toggle('hidden');
+    });
+    
+    // 平滑滚动
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        
+        const targetId = this.getAttribute('href');
+        const targetElement = document.querySelector(targetId);
+        
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 80,
+            behavior: 'smooth'
+          });
+          
+          // 关闭移动菜单
+          document.getElementById('mobile-menu').classList.add('hidden');
+        }
+      });
+    });
+    
+    // 模拟考题交互
+    document.querySelectorAll('.answer-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        const parent = this.closest('.bg-neutral-light');
+        const feedback = parent.querySelector('.feedback');
+        const showAnswerBtn = parent.querySelector('.show-answer-btn');
+        
+        // 禁用所有按钮
+        parent.querySelectorAll('.answer-btn').forEach(btn => {
+          btn.disabled = true;
+          if (btn.dataset.correct === 'true') {
+            btn.classList.add('bg-green-100', 'border-green-500', 'text-green-700');
+          } else {
+            btn.classList.add('opacity-50');
+          }
+        });
+        
+        // 显示反馈
+        feedback.classList.remove('hidden');
+        if (this.dataset.correct === 'true') {
+          feedback.classList.add('bg-green-100', 'border-l-4', 'border-green-500', 'text-green-700');
+          feedback.innerHTML = '<i class="fa-solid fa-check-circle mr-2"></i>恭喜，答对了！';
+        } else {
+          feedback.classList.add('bg-red-100', 'border-l-4', 'border-red-500', 'text-red-700');
+          feedback.innerHTML = '<i class="fa-solid fa-times-circle mr-2"></i>答错了，再试一次！';
+        }
+        
+        // 显示答案按钮
+        showAnswerBtn.classList.remove('hidden');
+        
+        // 答案按钮点击事件
+        showAnswerBtn.addEventListener('click', function() {
+          const explanation = parent.querySelector('.answer-explanation');
+          explanation.classList.remove('hidden');
+          this.innerHTML = '<i class="fa-solid fa-check-circle mr-2"></i>答案已显示';
+          this.disabled = true;
+          this.classList.add('bg-gray-400');
+          this.classList.remove('hover:bg-primary/90', 'hover:bg-secondary/90', 'hover:bg-accent/90', 'hover:bg-purple-600/90');
+        });
+      });
+    });
+    
+    // 互动练习参数设置
+    const lengthSlider = document.getElementById('length');
+    const lengthValue = document.getElementById('length-value');
+    const spacingSlider = document.getElementById('spacing');
+    const spacingValue = document.getElementById('spacing-value');
+    const calculateBtn = document.getElementById('calculate-btn');
+    
+    lengthSlider.addEventListener('input', function() {
+      lengthValue.textContent = this.value;
+    });
+    
+    spacingSlider.addEventListener('input', function() {
+      spacingValue.textContent = this.value;
+    });
+    
+    // 英雄区域画布
+    new p5(function(sketch) {
+      let trees = [];
+      let groundY;
+      
+      sketch.setup = function() {
+        const canvas = sketch.createCanvas(400, 400);
+        canvas.parent('hero-canvas');
+        groundY = 300;
+        
+        // 初始化树
+        for (let i = 0; i < 5; i++) {
+          const x = 80 + i * 60;
+          trees.push(new Tree(sketch, x, groundY));
+        }
+      };
+      
+      sketch.draw = function() {
+        sketch.background('#E0F2FE'); // 浅蓝色背景
+        
+        // 画天空和太阳
+        sketch.fill('#FFD700');
+        sketch.ellipse(70, 70, 60, 60);
+        
+        // 画地面
+        sketch.fill('#A7F3D0'); // 浅绿色
+        sketch.rect(0, groundY, sketch.width, sketch.height - groundY);
+        
+        // 画树
+        trees.forEach((tree, index) => {
+          tree.draw();
+          
+          // 画间隔线和标记
+          if (index < trees.length - 1) {
+            const midX = (tree.x + trees[index + 1].x) / 2;
+            sketch.stroke(0, 100);
+            sketch.strokeWeight(1);
+            sketch.line(tree.x, groundY - 10, trees[index + 1].x, groundY - 10);
+            
+            // 间隔文字
+            sketch.noStroke();
+            sketch.fill(0);
+            sketch.textSize(14);
+            sketch.textAlign(sketch.CENTER, sketch.TOP);
+            sketch.text("间隔", midX, groundY - 30);
+            sketch.text("5米", midX, groundY - 15);
+          }
+        });
+        
+        // 标题
+        sketch.noStroke();
+        sketch.fill(0);
+        sketch.textSize(18);
+        sketch.textAlign(sketch.CENTER);
+        sketch.text("两端都种树：棵数 = 间隔数 + 1", sketch.width/2, 40);
+      };
+    });
+    
+    // 概念区域画布
+    function createConceptCanvas(id, type) {
+      new p5(function(sketch) {
+        let trees = [];
+        let groundY;
+        
+        sketch.setup = function() {
+          const canvas = sketch.createCanvas(300, 120);
+          canvas.parent(id);
+          groundY = 100;
+          
+          // 根据类型确定树的数量
+          let treeCount;
+          if (type === 'both') { // 两端都种
+            treeCount = 5;
+          } else if (type === 'one') { // 一端种
+            treeCount = 4;
+          } else { // 两端都不种
+            treeCount = 3;
+          }
+          
+          // 初始化树
+          const spacing = 60;
+          const startX = 40;
+          
+          if (type === 'one') { // 一端种，从第二个位置开始
+            for (let i = 0; i < treeCount; i++) {
+              const x = startX + spacing + i * spacing;
+              trees.push(new Tree(sketch, x, groundY));
+            }
+          } else {
+            for (let i = 0; i < treeCount; i++) {
+              const x = startX + i * spacing;
+              trees.push(new Tree(sketch, x, groundY));
+            }
+          }
+        };
+        
+        sketch.draw = function() {
+          sketch.background(255);
+          
+          // 画地面
+          sketch.fill('#A7F3D0'); // 浅绿色
+          sketch.rect(0, groundY, sketch.width, sketch.height - groundY);
+          
+          // 画树
+          trees.forEach((tree, index) => {
+            tree.draw();
+          });
+          
+          // 画间隔线和标记
+          if (trees.length > 0) {
+            let startX = type === 'one' ? trees[0].x - 60 : trees[0].x;
+            let endX = trees[trees.length - 1].x;
+            
+            sketch.stroke(0, 100);
+            sketch.strokeWeight(1);
+            sketch.line(startX, groundY - 10, endX, groundY - 10);
+            
+            // 间隔标记
+            sketch.stroke(0);
+            sketch.strokeWeight(2);
+            sketch.line(startX, groundY - 15, startX, groundY - 5);
+            sketch.line(endX, groundY - 15, endX, groundY - 5);
+            
+            // 间隔数
+            let intervals = type === 'both' ? trees.length - 1 : 
+                           type === 'one' ? trees.length : trees.length + 1;
+            sketch.noStroke();
+            sketch.fill(0);
+            sketch.textSize(12);
+            sketch.textAlign(sketch.CENTER, sketch.TOP);
+            sketch.text(`${intervals}个间隔`, (startX + endX) / 2, groundY - 30);
+          }
+        };
+      });
+    }
+    
+    createConceptCanvas('concept-1-canvas', 'both');
+    createConceptCanvas('concept-2-canvas', 'one');
+    createConceptCanvas('concept-3-canvas', 'none');
+    
+    // 例题画布
+    function createExampleCanvas(id, type, length, spacing) {
+      new p5(function(sketch) {
+        let trees = [];
+        let groundY;
+        let intervals;
+        let treeCount;
+        
+        sketch.setup = function() {
+          const canvas = sketch.createCanvas(400, 180);
+          canvas.parent(id);
+          groundY = 150;
+          
+          // 计算间隔数和树的数量
+          intervals = length / spacing;
+          
+          if (type === 'both') {
+            treeCount = intervals + 1;
+          } else if (type === 'one') {
+            treeCount = intervals;
+          } else {
+            treeCount = intervals - 1;
+          }
+          
+          // 初始化树
+          const startX = 30;
+          const endX = 370;
+          const treeSpacing = (endX - startX) / (treeCount - (type === 'both' ? 1 : (type === 'one' ? 0 : -1)));
+          
+          for (let i = 0; i < treeCount; i++) {
+            let x;
+            if (type === 'one') {
+              x = startX + treeSpacing * (i + 1);
+            } else {
+              x = startX + treeSpacing * i;
+            }
+            trees.push(new Tree(sketch, x, groundY));
+          }
+        };
+        
+        sketch.draw = function() {
+          sketch.background(255);
+          
+          // 画地面
+          sketch.fill('#A7F3D0'); // 浅绿色
+          sketch.rect(0, groundY, sketch.width, sketch.height - groundY);
+          
+          // 画树
+          trees.forEach((tree, index) => {
+            tree.draw();
+            
+            // 画间隔线和标记
+            if (index < trees.length - 1) {
+              const midX = (tree.x + trees[index + 1].x) / 2;
+              sketch.stroke(0, 100);
+              sketch.strokeWeight(1);
+              sketch.line(tree.x, groundY - 10, trees[index + 1].x, groundY - 10);
+              
+              // 间隔文字
+              sketch.noStroke();
+              sketch.fill(0);
+              sketch.textSize(12);
+              sketch.textAlign(sketch.CENTER, sketch.TOP);
+              sketch.text(`${spacing}米`, midX, groundY - 25);
+            }
+          });
+          
+          // 画总长度标记
+          const startX = type === 'one' ? trees[0].x - 30 : trees[0].x;
+          const endX = trees[trees.length - 1].x;
+          
+          sketch.stroke(0);
+          sketch.strokeWeight(2);
+          sketch.line(startX, groundY - 40, endX, groundY - 40);
+          sketch.line(startX, groundY - 45, startX, groundY - 35);
+          sketch.line(endX, groundY - 45, endX, groundY - 35);
+          
+          sketch.noStroke();
+          sketch.fill(0);
+          sketch.textSize(14);
+          sketch.textAlign(sketch.CENTER, sketch.TOP);
+          sketch.text(`${length}米`, (startX + endX) / 2, groundY - 55);
+          
+          // 显示公式
+          let formula;
+          if (type === 'both') {
+            formula = `棵数 = ${intervals} + 1 = ${treeCount}`;
+          } else if (type === 'one') {
+            formula = `棵数 = ${intervals}`;
+          } else {
+            formula = `棵数 = ${intervals} - 1 = ${treeCount}`;
+          }
+          
+          sketch.textAlign(sketch.LEFT, sketch.TOP);
+          sketch.text(formula, 10, 10);
+        };
+      });
+    }
+    
+    createExampleCanvas('example-1-canvas', 'both', 20, 5);
+    createExampleCanvas('example-2-canvas', 'one', 30, 3);
+    createExampleCanvas('example-3-canvas', 'none', 40, 8);
+    createExampleCanvas('example-4-canvas', 'both', 50, 5);
+    
+    // 互动练习画布
+    let practiceSketch;
+    practiceSketch = new p5(function(sketch) {
+      let trees = [];
+      let groundY;
+      let length = 20;
+      let spacing = 5;
+      let type = 'both';
+      let intervals;
+      let treeCount;
+      
+      sketch.setup = function() {
+        const canvas = sketch.createCanvas(600, 280);
+        canvas.parent('practice-canvas');
+        groundY = 250;
+        
+        updateTrees();
+      };
+      
+      function updateTrees() {
+        trees = [];
+        intervals = length / spacing;
+        
+        if (type === 'both') {
+          treeCount = intervals + 1;
+        } else if (type === 'one') {
+          treeCount = intervals;
+        } else {
+          treeCount = intervals - 1;
+        }
+        
+        // 初始化树
+        const startX = 50;
+        const endX = 550;
+        const treeSpacing = (endX - startX) / (treeCount - (type === 'both' ? 1 : (type === 'one' ? 0 : -1)));
+        
+        for (let i = 0; i < treeCount; i++) {
+          let x;
+          if (type === 'one') {
+            x = startX + treeSpacing * (i + 1);
+          } else {
+            x = startX + treeSpacing * i;
+          }
+          trees.push(new Tree(sketch, x, groundY));
+        }
+        
+        // 更新结果显示
+        document.getElementById('result-length').textContent = `${length}米`;
+        document.getElementById('result-spacing').textContent = `${spacing}米`;
+        document.getElementById('result-intervals').textContent = `${intervals}个`;
+        
+        let typeText, formulaText;
+        if (type === 'both') {
+          typeText = '两端都种';
+          formulaText = '棵数 = 间隔数 + 1';
+        } else if (type === 'one') {
+          typeText = '一端种一端不种';
+          formulaText = '棵数 = 间隔数';
+        } else {
+          typeText = '两端都不种';
+          formulaText = '棵数 = 间隔数 - 1';
+        }
+        
+        document.getElementById('result-type').textContent = typeText;
+        document.getElementById('result-trees').textContent = `${treeCount}棵`;
+        document.getElementById('result-formula').textContent = formulaText;
+      }
+      
+      sketch.draw = function() {
+        sketch.background(255);
+        
+        // 画地面
+        sketch.fill('#A7F3D0'); // 浅绿色
+        sketch.rect(0, groundY, sketch.width, sketch.height - groundY);
+        
+        // 画树
+        trees.forEach((tree, index) => {
+          tree.draw();
+          
+          // 画间隔线和标记
+          if (index < trees.length - 1) {
+            const midX = (tree.x + trees[index + 1].x) / 2;
+            sketch.stroke(0, 100);
+            sketch.strokeWeight(1);
+            sketch.line(tree.x, groundY - 10, trees[index + 1].x, groundY - 10);
+            
+            // 间隔文字
+            sketch.noStroke();
+            sketch.fill(0);
+            sketch.textSize(12);
+            sketch.textAlign(sketch.CENTER, sketch.TOP);
+            sketch.text(`${spacing}米`, midX, groundY - 25);
+          }
+        });
+        
+        // 画总长度标记
+        const startX = type === 'one' ? trees[0].x - (500 / intervals) : trees[0].x;
+        const endX = trees[trees.length - 1].x;
+        
+        sketch.stroke(0);
+        sketch.strokeWeight(2);
+        sketch.line(startX, groundY - 40, endX, groundY - 40);
+        sketch.line(startX, groundY - 45, startX, groundY - 35);
+        sketch.line(endX, groundY - 45, endX, groundY - 35);
+        
+        sketch.noStroke();
+        sketch.fill(0);
+        sketch.textSize(14);
+        sketch.textAlign(sketch.CENTER, sketch.TOP);
+        sketch.text(`${length}米`, (startX + endX) / 2, groundY - 55);
+        
+        // 显示公式和结果
+        let formula;
+        if (type === 'both') {
+          formula = `棵数 = ${intervals} + 1 = ${treeCount}`;
+        } else if (type === 'one') {
+          formula = `棵数 = ${intervals}`;
+        } else {
+          formula = `棵数 = ${intervals} - 1 = ${treeCount}`;
+        }
+        
+        sketch.textAlign(sketch.LEFT, sketch.TOP);
+        sketch.textSize(16);
+        sketch.fill(0);
+        sketch.text(`总长度: ${length}米`, 20, 10);
+        sketch.text(`间隔距离: ${spacing}米`, 20, 35);
+        sketch.text(formula, 20, 60);
+      };
+      
+      // 更新参数
+      calculateBtn.addEventListener('click', function() {
+        length = parseInt(lengthSlider.value);
+        spacing = parseInt(spacingSlider.value);
+        
+        const typeRadios = document.getElementsByName('type');
+        for (let i = 0; i < typeRadios.length; i++) {
+          if (typeRadios[i].checked) {
+            type = typeRadios[i].value;
+            break;
+          }
+        }
+        
+        updateTrees();
+      });
+    });
+    
+    // 树类
+    class Tree {
+      constructor(sketch, x, y) {
+        this.sketch = sketch;
+        this.x = x;
+        this.y = y;
+      }
+      
+      draw() {
+        const sketch = this.sketch;
+        
+        // 树干
+        sketch.fill(139, 69, 19); // 棕色
+        sketch.rect(this.x - 5, this.y - 30, 10, 30);
+        
+        // 树叶
+        sketch.fill(34, 139, 34); // 绿色
+        sketch.ellipse(this.x, this.y - 40, 25, 30);
+      }
+    }
+  </script>
+</body>
+</html>
